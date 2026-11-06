@@ -290,13 +290,13 @@ class ScreenClickerApp(App):
     def on_engine_message(self, message: EngineMessage) -> None:
         ev = message.event
         if isinstance(ev, StatusEvent):
-            self._on_status(ev)
+            self._show_status(ev)
         elif isinstance(ev, ScanEvent):
-            self._on_scan(ev)
+            self._show_scan(ev)
         elif isinstance(ev, ClickEvent):
-            self._on_click(ev)
+            self._show_click(ev)
 
-    def _on_status(self, ev: StatusEvent) -> None:
+    def _show_status(self, ev: StatusEvent) -> None:
         if ev.state != self._state:
             self._state = ev.state
             pill = self.query_one("#pill", Static)
@@ -316,7 +316,7 @@ class ScreenClickerApp(App):
                 recent.clear_options()
                 recent.add_options(Option(name, id=name) for name in self._recent)
 
-    def _on_scan(self, ev: ScanEvent) -> None:
+    def _show_scan(self, ev: ScanEvent) -> None:
         stats = self.engine.stats
         self._latency.append(ev.duration_ms)
         self.query_one("#spark", Sparkline).data = list(self._latency)
@@ -334,7 +334,7 @@ class ScreenClickerApp(App):
                 text = Text(line.text, style="bold reverse" if target else "")
                 table.add_row(text, str(b.x), str(b.y), Text(target or "", style="bold green"))
 
-    def _on_click(self, ev: ClickEvent) -> None:
+    def _show_click(self, ev: ClickEvent) -> None:
         self._history.appendleft(ev)
         self.query_one("#c-clicks", StatCard).set(str(self.engine.stats.clicks))
         table = self.query_one("#history", DataTable)
