@@ -14,6 +14,7 @@ It watches the screen for text you choose, like _"Return to lobby"_, _"Play"_ or
 - **Text-based detection.** Uses the OCR engine built into Windows, so it works at any resolution, UI scale or theme without image templates.
 - **Whole-word, case-insensitive matching.** `play` matches _PLAY_ and _Play!_ but not _Player_ or _Playlist_.
 - **Ordered targets.** Add, remove, reorder and enable/disable targets on the fly. When several are visible, the one highest in the list is clicked first.
+- **Optional region per target.** Limit a target to part of the window (in percent), for example to click only the _PLAY_ in the bottom-right corner when the word also appears elsewhere.
 - **Focus guard.** Only clicks while the foreground window belongs to a matching process (glob patterns such as `mygame*.exe`).
 - **Per-target cooldown**, so the same button isn't clicked repeatedly.
 - **Foreground window only.** Scans and clicks only inside the active window, on any monitor. Text in other windows (including Screen Clicker's own UI) is never clicked, and focus stays where it is.
@@ -92,7 +93,7 @@ python -m screen_clicker
 
 1. **Targets tab (`F2`):** add the texts you want clicked, for example `return to lobby` and `play`.
 2. **Focus tab (`F3`):** switch to the target app once, come back, and pick its process from _Recent foreground processes_. Or type a glob such as `mygame*`.
-3. **OCR Preview tab (`F4`):** check what the OCR reads on screen, which helps you pick exact texts.
+3. **OCR Preview tab (`F4`):** check what the OCR reads on screen, which helps you pick exact texts. The _X %_ / _Y %_ columns show where each text sits in the window, which helps you pick a region.
 4. Switch to your app. The status changes to **RUNNING** and matching buttons get clicked.
 5. Optional: once it works, close the TUI and run it [in the background](#run-in-the-background-tray-only). It uses the same `config.yaml`.
 
@@ -139,6 +140,7 @@ cooldown_seconds: 5.0 # min. time before the same target is clicked again
 targets: # case-insensitive, whole words; top = highest priority
   - text: return to lobby
   - text: play
+    region: [60, 75, 40, 25] # optional: left, top, width, height in % of the window
   - text: continue
     enabled: false
 process_patterns: # glob, case-insensitive; empty = any window
@@ -156,12 +158,18 @@ logging:
 
 Relative paths are resolved against the folder that contains `config.yaml`.
 
+### Regions
+
+If a word appears in several places (for example _PLAY_ in a menu and on the main button), give the target a **region**: `left, top, width, height` in percent of the foreground window. The text only counts when its center is inside that area. `[60, 75, 40, 25]` means the bottom-right corner: from 60 % to 100 % horizontally and 75 % to 100 % vertically.
+
+To find the numbers, open the **OCR Preview** (`F4`), switch to the app for a moment and come back. The _X %_ and _Y %_ columns show the center of each text. In the **Targets** tab, type the region next to the text before adding it, or select an existing target, type the region and press **Set region**. An empty region field with **Set region** removes the region.
+
 ## Tips
 
 - **Games:** use _windowed fullscreen_ / _borderless_ mode. Exclusive fullscreen often makes screen captures come out black.
 - **Admin apps:** if the target app runs as administrator, Windows blocks clicks from non-elevated programs. Turn on **Run as administrator** in Settings.
 - **Speed:** a 1440p screen typically takes 100–600 ms to OCR, depending on how much text is on it. Lower `max_ocr_height` (for example to `1080`) for faster scans.
-- **Short targets:** single short words like _OK_ can show up in many places. Restrict the process patterns or use a longer phrase.
+- **Short targets:** single short words like _OK_ can show up in many places. Give the target a [region](#regions), restrict the process patterns or use a longer phrase.
 
 ## Development
 

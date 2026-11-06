@@ -183,6 +183,11 @@ DataTable {
     width: 1fr;
 }
 
+#region-input {
+    width: 34;
+    margin-left: 1;
+}
+
 .inputrow Button {
     margin-left: 1;
 }

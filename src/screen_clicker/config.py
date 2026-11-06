@@ -17,9 +17,12 @@ cooldown_seconds: 5.0
 
 # Texts to click when visible (case-insensitive, whole words).
 # Order is priority: the first visible target is clicked.
+# Optional region: [left, top, width, height] in percent of the window;
+# the text only counts when its center is inside that area.
 targets: []
 #  - text: return to lobby
 #  - text: play
+#    region: [60, 75, 40, 25]   # bottom-right corner
 #    enabled: true
 
 # Only act when the foreground process matches one of these globs
@@ -53,10 +56,49 @@ class ConfigError(ValueError):
     pass
 
 
+@dataclass(frozen=True)
+class Region:
+    """Area of the window in percent (0-100)."""
+
+    left: float
+    top: float
+    width: float
+    height: float
+
+    def contains(self, x_pct: float, y_pct: float) -> bool:
+        return (
+            self.left <= x_pct <= self.left + self.width
+            and self.top <= y_pct <= self.top + self.height
+        )
+
+    def __str__(self) -> str:
+        return ",".join(f"{v:g}" for v in (self.left, self.top, self.width, self.height))
+
+
+def parse_region(value: Any) -> Region | None:
+    """Accepts None/"", "l,t,w,h" or a list of 4 numbers (percent of the window)."""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    parts = value.replace(";", ",").split(",") if isinstance(value, str) else value
+    try:
+        nums = [float(p) for p in parts]
+    except (TypeError, ValueError):
+        nums = []
+    if len(nums) != 4:
+        raise ConfigError(f"Region must be 4 numbers 'left,top,width,height' (percent), got {value!r}")
+    left, top, width, height = nums
+    if not (0 <= left < 100 and 0 <= top < 100 and width > 0 and height > 0):
+        raise ConfigError(f"Region {value!r}: left/top must be 0-99 and width/height above 0")
+    if left + width > 100.001 or top + height > 100.001:
+        raise ConfigError(f"Region {value!r} reaches outside the window (left+width and top+height max 100)")
+    return Region(left, top, width, height)
+
+
 @dataclass
 class Target:
     text: str
     enabled: bool = True
+    region: Region | None = None
 
 
 @dataclass
@@ -93,7 +135,7 @@ def _parse_target(item: Any) -> Target:
     if isinstance(item, str):
         return Target(item.strip())
     if isinstance(item, dict) and isinstance(item.get("text"), str):
-        return Target(item["text"].strip(), bool(item.get("enabled", True)))
+        return Target(item["text"].strip(), bool(item.get("enabled", True)), parse_region(item.get("region")))
     raise ConfigError(f"Invalid target entry: {item!r}")
 
 
@@ -143,11 +185,18 @@ def validate(cfg: Config) -> None:
         raise ConfigError("'hotkey_pause' must not be empty")
 
 
+def _target_dict(t: Target) -> dict[str, Any]:
+    d: dict[str, Any] = {"text": t.text, "enabled": t.enabled}
+    if t.region:
+        d["region"] = [t.region.left, t.region.top, t.region.width, t.region.height]
+    return d
+
+
 def to_dict(cfg: Config) -> dict[str, Any]:
     return {
         "interval_seconds": cfg.interval_seconds,
         "cooldown_seconds": cfg.cooldown_seconds,
-        "targets": [{"text": t.text, "enabled": t.enabled} for t in cfg.targets],
+        "targets": [_target_dict(t) for t in cfg.targets],
         "process_patterns": list(cfg.process_patterns),
         "ocr_language": cfg.ocr_language,
         "max_ocr_height": cfg.max_ocr_height,

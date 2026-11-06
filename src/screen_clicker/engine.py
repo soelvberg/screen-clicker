@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import ImageDraw
 
 from . import clicker, focus
-from .config import Config
+from .config import Config, Target
 from .detector import Detector, OcrUnavailable, ScanResult
 from .matching import Line, Match, find_matches
 
@@ -41,6 +41,11 @@ class ScanEvent:
     duration_ms: float
     lines: tuple[Line, ...]
     matches: tuple[Match, ...]
+    frame: tuple[int, int, int, int] = (0, 0, 1, 1)  # scanned window: left, top, width, height
+
+    def percent(self, x: int, y: int) -> tuple[float, float]:
+        left, top, width, height = self.frame
+        return (x - left) * 100 / width, (y - top) * 100 / height
 
 
 @dataclass(frozen=True)
@@ -53,6 +58,18 @@ class ClickEvent:
 
 
 Event = StatusEvent | ScanEvent | ClickEvent
+
+
+def in_regions(matches: list[Match], targets: list[Target], frame: tuple[int, int, int, int]) -> list[Match]:
+    """Keep matches whose center lies in the region of a target with that text (no region = anywhere)."""
+    left, top, width, height = frame
+    kept = []
+    for m in matches:
+        x, y = m.box.center
+        px, py = (x - left) * 100 / width, (y - top) * 100 / height
+        if any(t.text == m.target and (t.region is None or t.region.contains(px, py)) for t in targets):
+            kept.append(m)
+    return kept
 
 
 @dataclass
@@ -187,11 +204,13 @@ class Engine:
             return
 
         result = detector.scan(fg.region)
-        targets = [t.text for t in cfg.targets if t.enabled]
-        matches = find_matches(result.lines, targets)
+        targets = [t for t in cfg.targets if t.enabled]
+        r = fg.region
+        frame = (r["left"], r["top"], r["width"], r["height"])
+        matches = in_regions(find_matches(result.lines, [t.text for t in targets]), targets, frame)
         self.stats.scans += 1
         self.stats.total_ocr_ms += result.duration_ms
-        self._emit(ScanEvent(result.duration_ms, tuple(result.lines), tuple(matches)))
+        self._emit(ScanEvent(result.duration_ms, tuple(result.lines), tuple(matches), frame))
 
         if not can_click:
             return
