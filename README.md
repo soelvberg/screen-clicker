@@ -3,7 +3,7 @@
 # Screen Clicker
 
 **An OCR-driven auto clicker for Windows with a terminal UI.**
-It watches the screen for text you choose, like *"Return to lobby"*, *"Play"* or *"Accept"*, and clicks it for you.
+It watches the screen for text you choose, like _"Return to lobby"_, _"Play"_ or _"Accept"_, and clicks it for you.
 
 ![Screen Clicker dashboard](docs/screenshot.svg)
 
@@ -12,7 +12,7 @@ It watches the screen for text you choose, like *"Return to lobby"*, *"Play"* or
 ## Features
 
 - **Text-based detection.** Uses the OCR engine built into Windows, so it works at any resolution, UI scale or theme without image templates.
-- **Whole-word, case-insensitive matching.** `play` matches *PLAY* and *Play!* but not *Player* or *Playlist*.
+- **Whole-word, case-insensitive matching.** `play` matches _PLAY_ and _Play!_ but not _Player_ or _Playlist_.
 - **Ordered targets.** Add, remove, reorder and enable/disable targets on the fly. When several are visible, the one highest in the list is clicked first.
 - **Focus guard.** Only clicks while the foreground window belongs to a matching process (glob patterns such as `mygame*.exe`).
 - **Per-target cooldown**, so the same button isn't clicked repeatedly.
@@ -71,7 +71,7 @@ python -m screen_clicker
 ### First run
 
 1. **Targets tab (`F2`):** add the texts you want clicked, for example `return to lobby` and `play`.
-2. **Focus tab (`F3`):** switch to the target app once, come back, and pick its process from *Recent foreground processes*. Or type a glob such as `mygame*`.
+2. **Focus tab (`F3`):** switch to the target app once, come back, and pick its process from _Recent foreground processes_. Or type a glob such as `mygame*`.
 3. **OCR Preview tab (`F4`):** check what the OCR reads on screen, which helps you pick exact texts.
 4. Switch to your app. The status changes to **RUNNING** and matching buttons get clicked.
 
@@ -86,47 +86,47 @@ screen-clicker [-c CONFIG] [--headless]
 
 ### Key bindings
 
-| Key | Action |
-|---|---|
-| `Space` | Pause / resume |
-| `F8` *(global, configurable)* | Pause / resume from any app |
-| `a` | Add a target |
-| `F1`–`F5` | Dashboard · Targets · Focus · OCR Preview · Settings |
-| `Enter` | Toggle the selected target |
-| `t` | Switch to the next theme |
-| `Ctrl+S` | Save settings |
-| `Esc` | Move focus out of the current input |
-| `Ctrl+P` | Command palette |
-| `q` | Quit |
+| Key                           | Action                                               |
+| ----------------------------- | ---------------------------------------------------- |
+| `Space`                       | Pause / resume                                       |
+| `F8` _(global, configurable)_ | Pause / resume from any app                          |
+| `a`                           | Add a target                                         |
+| `F1`–`F5`                     | Dashboard · Targets · Focus · OCR Preview · Settings |
+| `Enter`                       | Toggle the selected target                           |
+| `t`                           | Switch to the next theme                             |
+| `Ctrl+S`                      | Save settings                                        |
+| `Esc`                         | Move focus out of the current input                  |
+| `Ctrl+P`                      | Command palette                                      |
+| `q`                           | Quit                                                 |
 
 ### Status
 
-| Status | Meaning |
-|---|---|
-| ● **RUNNING** | A matching app is in front; scanning and clicking |
+| Status                  | Meaning                                                           |
+| ----------------------- | ----------------------------------------------------------------- |
+| ● **RUNNING**           | A matching app is in front; scanning and clicking                 |
 | ◍ **WAITING FOR FOCUS** | The foreground window doesn't match (or is Screen Clicker itself) |
-| ⏸ **PAUSED** | Paused with the hotkey, tray menu or `Space` |
-| ✖ **ERROR** | For example, the OCR language isn't installed (see the event log) |
+| ⏸ **PAUSED**            | Paused with the hotkey, tray menu or `Space`                      |
+| ✖ **ERROR**             | For example, the OCR language isn't installed (see the event log) |
 
 ## Configuration
 
 Everything can be edited in the TUI, which saves changes immediately. You can also edit `config.yaml` by hand:
 
 ```yaml
-interval_seconds: 1.0        # time between scans
-cooldown_seconds: 5.0        # min. time before the same target is clicked again
-targets:                     # case-insensitive, whole words; top = highest priority
+interval_seconds: 1.0 # time between scans
+cooldown_seconds: 5.0 # min. time before the same target is clicked again
+targets: # case-insensitive, whole words; top = highest priority
   - text: return to lobby
   - text: play
   - text: continue
     enabled: false
-process_patterns:            # glob, case-insensitive; empty = any window
+process_patterns: # glob, case-insensitive; empty = any window
   - mygame*
-ocr_language: en             # Windows OCR language tag
-max_ocr_height: 1440         # downscale taller screens before OCR (speed vs. accuracy)
-restore_mouse: true          # move the cursor back after clicking
-hotkey_pause: f8             # e.g. f8, ctrl+shift+p
-run_as_admin: false          # relaunch elevated via UAC (only if the target app runs as admin)
+ocr_language: en # Windows OCR language tag
+max_ocr_height: 1440 # downscale taller screens before OCR (speed vs. accuracy)
+restore_mouse: true # move the cursor back after clicking
+hotkey_pause: f8 # e.g. f8, ctrl+shift+p
+run_as_admin: false # relaunch elevated via UAC (only if the target app runs as admin)
 logging:
   file: logs/screen-clicker.log
   save_click_screenshots: true
@@ -137,10 +137,10 @@ Relative paths are resolved against the folder that contains `config.yaml`.
 
 ## Tips
 
-- **Games:** use *windowed fullscreen* / *borderless* mode. Exclusive fullscreen often makes screen captures come out black.
+- **Games:** use _windowed fullscreen_ / _borderless_ mode. Exclusive fullscreen often makes screen captures come out black.
 - **Admin apps:** if the target app runs as administrator, Windows blocks clicks from non-elevated programs. Turn on **Run as administrator** in Settings.
 - **Speed:** a 1440p screen typically takes 100–600 ms to OCR, depending on how much text is on it. Lower `max_ocr_height` (for example to `1080`) for faster scans.
-- **Short targets:** single short words like *OK* can show up in many places. Restrict the process patterns or use a longer phrase.
+- **Short targets:** single short words like _OK_ can show up in many places. Restrict the process patterns or use a longer phrase.
 
 ## Development
 
