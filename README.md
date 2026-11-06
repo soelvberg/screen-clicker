@@ -45,11 +45,31 @@ flowchart LR
   ```powershell
   Add-WindowsCapability -Online -Name "Language.OCR~~~en-US~0.0.1.0"
   ```
-- To run from source: Python 3.13
+- To run from source: Python 3.13 (the released exe needs nothing extra)
 
 ## Getting started
 
-### Option A: Build the `.exe`
+### Option A: Download the `.exe` (easiest)
+
+1. Download **`screen-clicker.exe`** from the [latest release](https://github.com/soelvberg/screen-clicker/releases/latest). No Python or installer needed.
+2. Put it in its **own folder that you can write to**, for example `C:\Tools\ScreenClicker\`. Avoid `Program Files`. `config.yaml` and `logs\` are created next to the exe.
+3. **Double-click** it. The TUI opens in a terminal window.
+
+> - The exe isn't code-signed, so Windows SmartScreen may warn on first run. Choose _More info → Run anyway_. Some antivirus tools also flag PyInstaller apps by mistake. You can check the download against `screen-clicker.exe.sha256` with `Get-FileHash screen-clicker.exe`.
+> - Startup takes a few seconds while the bundled runtime unpacks.
+> - The TUI looks best in [Windows Terminal](https://aka.ms/terminal), the default on Windows 11. On Windows 10, set Windows Terminal as the _default terminal application_ in its settings so a double-click opens there instead of the classic console.
+
+#### Run in the background (tray only)
+
+Create a shortcut to the exe, open its **Properties** and add `--headless` to the target:
+
+```text
+C:\Tools\ScreenClicker\screen-clicker.exe --headless
+```
+
+A console window flashes briefly and closes, leaving only a tray icon (right-click it to pause or quit). Tip: set the shortcut's _Run_ option to **Minimized** to hide the flash. To start it with Windows, press `Win+R`, type `shell:startup` and put the shortcut in the folder that opens.
+
+### Option B: Build the `.exe` yourself
 
 ```powershell
 git clone https://github.com/soelvberg/screen-clicker.git
@@ -57,9 +77,9 @@ cd screen-clicker
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-This produces `dist\screen-clicker.exe`. Put it anywhere you like. A `config.yaml` is created next to it on first run.
+This produces `dist\screen-clicker.exe`.
 
-### Option B: Run from source
+### Option C: Run from source
 
 ```powershell
 py -3.13 -m venv .venv
@@ -74,13 +94,14 @@ python -m screen_clicker
 2. **Focus tab (`F3`):** switch to the target app once, come back, and pick its process from _Recent foreground processes_. Or type a glob such as `mygame*`.
 3. **OCR Preview tab (`F4`):** check what the OCR reads on screen, which helps you pick exact texts.
 4. Switch to your app. The status changes to **RUNNING** and matching buttons get clicked.
+5. Optional: once it works, close the TUI and run it [in the background](#run-in-the-background-tray-only). It uses the same `config.yaml`.
 
 ## Usage
 
 ```text
-screen-clicker [-c CONFIG] [--headless]
+screen-clicker.exe [-c CONFIG] [--headless]
 
-  -c, --config CONFIG   Path to config.yaml (default: next to the exe / current dir)
+  -c, --config CONFIG   Path to config.yaml (default: next to the exe; from source: current dir)
   --headless            No TUI, tray icon only
 ```
 
