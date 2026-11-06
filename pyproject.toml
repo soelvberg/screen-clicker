@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screen-clicker"
+version = "0.1.0"
+description = "OCR-driven auto clicker for Windows with a terminal UI."
+requires-python = ">=3.13"
+dependencies = [
+    "mss>=10",
+    "Pillow>=11",
+    "psutil>=6",
+    "pynput>=1.8",
+    "pystray>=0.19",
+    "PyYAML>=6",
+    "textual>=8",
+    "winrt-runtime>=3",
+    "winrt-Windows.Foundation>=3",
+    "winrt-Windows.Foundation.Collections>=3",
+    "winrt-Windows.Globalization>=3",
+    "winrt-Windows.Graphics.Imaging>=3",
+    "winrt-Windows.Media.Ocr>=3",
+    "winrt-Windows.Storage.Streams>=3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6.10", "textual-dev>=1.7"]
+
+[project.scripts]
+screen-clicker = "screen_clicker.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"screen_clicker.tui" = ["*.tcss"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

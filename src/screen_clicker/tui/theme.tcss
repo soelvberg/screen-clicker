@@ -1,0 +1,244 @@
+Screen {
+    background: $background;
+}
+
+/* ---------- top bar ---------- */
+
+#topbar {
+    height: auto;
+    padding: 1 2 0 2;
+}
+
+#logo {
+    width: 1fr;
+}
+
+#statusbox {
+    width: 32;
+    height: auto;
+}
+
+#pill {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    text-style: bold;
+    border: round $primary;
+    color: $primary;
+}
+
+#pill.-running {
+    color: $success;
+    border: round $success;
+    background: $success 12%;
+}
+
+#pill.-paused {
+    color: $warning;
+    border: round $warning;
+    background: $warning 12%;
+}
+
+#pill.-waiting {
+    color: $text-muted;
+    border: round $foreground 40%;
+}
+
+#pill.-error {
+    color: $error;
+    border: round $error;
+    background: $error 15%;
+}
+
+#fg, #clock {
+    width: 100%;
+    content-align: right middle;
+    color: $text-muted;
+    padding: 0 1;
+}
+
+#fg {
+    color: $accent;
+}
+
+/* ---------- tabs ---------- */
+
+TabbedContent {
+    height: 1fr;
+    margin: 0 1;
+}
+
+TabPane {
+    padding: 1 1 0 1;
+}
+
+/* ---------- dashboard ---------- */
+
+#cards {
+    height: auto;
+    margin-bottom: 1;
+}
+
+StatCard {
+    width: 1fr;
+    height: auto;
+    border: round $primary 50%;
+    background: $surface;
+    padding: 0 1;
+    margin-right: 1;
+}
+
+StatCard:hover {
+    border: round $primary;
+}
+
+StatCard .title {
+    color: $text-muted;
+    text-style: bold;
+}
+
+StatCard Digits {
+    color: $primary;
+    width: auto;
+}
+
+#c-clicks Digits {
+    color: $secondary;
+}
+
+#c-ocr Digits {
+    color: $accent;
+}
+
+#c-uptime {
+    margin-right: 0;
+}
+
+#c-uptime Digits {
+    color: $success;
+}
+
+#dash-mid {
+    height: 1fr;
+    min-height: 10;
+}
+
+.panel {
+    border: round $secondary 50%;
+    border-title-color: $secondary;
+    border-title-style: bold;
+    background: $surface;
+    padding: 0 1;
+}
+
+.panel:focus-within {
+    border: round $secondary;
+}
+
+#p-latency {
+    width: 2fr;
+    margin-right: 1;
+}
+
+#p-history {
+    width: 3fr;
+}
+
+#spark {
+    height: 4;
+    margin-bottom: 1;
+}
+
+#spark > .sparkline--min-color {
+    color: $primary;
+}
+
+#spark > .sparkline--max-color {
+    color: $secondary;
+}
+
+#log {
+    height: 11;
+    margin-top: 1;
+    border: round $primary 40%;
+    border-title-color: $primary;
+    border-title-style: bold;
+    background: $surface;
+    scrollbar-size-vertical: 1;
+}
+
+DataTable {
+    height: 1fr;
+    background: $surface;
+}
+
+/* ---------- forms ---------- */
+
+.inputrow {
+    height: auto;
+    margin-bottom: 1;
+}
+
+.inputrow Input {
+    width: 1fr;
+}
+
+.inputrow Button {
+    margin-left: 1;
+}
+
+.btnrow {
+    height: auto;
+    margin-top: 1;
+}
+
+.btnrow Button {
+    margin-right: 1;
+}
+
+.hint {
+    color: $text-muted;
+    padding: 1 0 0 0;
+}
+
+#targets-table, #preview-table {
+    border: round $primary 40%;
+}
+
+#focus-body {
+    height: 1fr;
+}
+
+#p-patterns {
+    width: 1fr;
+    margin-right: 1;
+}
+
+#p-recent {
+    width: 1fr;
+}
+
+#recent {
+    height: 1fr;
+    background: $surface;
+    border: none;
+}
+
+#settings-form {
+    padding: 0 1;
+}
+
+.setting {
+    height: auto;
+    margin-bottom: 1;
+}
+
+.setting Label {
+    width: 30;
+    padding: 1 0;
+    color: $text;
+}
+
+.setting Input {
+    width: 32;
+}
