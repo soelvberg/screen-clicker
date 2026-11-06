@@ -31,7 +31,7 @@ class ScanResult:
 
 
 class Detector:
-    """Captures a monitor and runs Windows OCR on it. Use from a single thread."""
+    """Captures a screen region and runs Windows OCR on it. Use from a single thread."""
 
     def __init__(self, language: str = "en", max_height: int = 1440) -> None:
         lang = Language(language)
@@ -53,10 +53,10 @@ class Detector:
         self._sct.close()
         self._loop.close()
 
-    def scan(self, monitor: dict[str, int] | None = None) -> ScanResult:
-        """OCR one monitor region (left/top/width/height); defaults to the primary monitor."""
+    def scan(self, region: dict[str, int] | None = None) -> ScanResult:
+        """OCR a screen region (left/top/width/height); defaults to the primary monitor."""
         started = time.perf_counter()
-        monitor = monitor or self._sct.monitors[1]
+        monitor = region or self._sct.monitors[1]
         shot = self._sct.grab(monitor)
         width, height = shot.size
         bgra = bytes(shot.bgra)

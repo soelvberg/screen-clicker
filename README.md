@@ -16,7 +16,7 @@ It watches the screen for text you choose, like _"Return to lobby"_, _"Play"_ or
 - **Ordered targets.** Add, remove, reorder and enable/disable targets on the fly. When several are visible, the one highest in the list is clicked first.
 - **Focus guard.** Only clicks while the foreground window belongs to a matching process (glob patterns such as `mygame*.exe`).
 - **Per-target cooldown**, so the same button isn't clicked repeatedly.
-- **Multi-monitor aware.** Scans only the monitor the foreground window is on.
+- **Foreground window only.** Scans and clicks only inside the active window, on any monitor. Text in other windows (including Screen Clicker's own UI) is never clicked, and focus stays where it is.
 - **Terminal UI** with live stats, an OCR latency graph, click history, an event log, an OCR preview and a settings editor. It has its own neon theme plus all of Textual's built-in themes.
 - **Global pause hotkey** (default `F8`) and a **system tray icon** that changes color with the current state.
 - **Headless mode** for running with only the tray icon.
@@ -31,7 +31,7 @@ It watches the screen for text you choose, like _"Return to lobby"_, _"Play"_ or
 flowchart LR
     A[Every N seconds] --> B{Foreground process<br/>matches a pattern?}
     B -- no --> A
-    B -- yes --> C[Capture that monitor]
+    B -- yes --> C[Capture the foreground window]
     C --> D[Windows OCR]
     D --> E{Enabled target<br/>visible & off cooldown?}
     E -- no --> A
@@ -175,7 +175,7 @@ textual run --dev src/screen_clicker/__main__.py   # live CSS reload & devtools
 src/screen_clicker/
 ├─ __main__.py     CLI entry: TUI or --headless
 ├─ config.py       load / save / validate config.yaml
-├─ focus.py        foreground process + monitor detection, glob matching
+├─ focus.py        foreground process + window region detection, glob matching
 ├─ detector.py     screen capture (mss) + Windows OCR (WinRT)
 ├─ matching.py     whole-word target matching
 ├─ clicker.py      SendInput mouse clicks

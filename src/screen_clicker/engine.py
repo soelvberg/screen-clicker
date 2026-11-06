@@ -80,6 +80,7 @@ class Engine:
         self._last_click: dict[str, float] = {}
         self._thread: threading.Thread | None = None
         self._own_pids = focus.own_process_ids()
+        self._own_hwnds = focus.own_window_handles()
         self.preview = False
         self.stats = Stats()
         self.state = State.STARTING
@@ -168,7 +169,7 @@ class Engine:
     def _tick(self, cfg: Config, detector: Detector) -> None:
         fg = focus.foreground_process()
         name = fg.name if fg else None
-        own_window = fg is not None and fg.pid in self._own_pids
+        own_window = fg is not None and (fg.pid in self._own_pids or fg.hwnd in self._own_hwnds)
         focused = not own_window and focus.matches(name, cfg.process_patterns)
 
         if self._paused:
@@ -181,10 +182,11 @@ class Engine:
             self._emit(StatusEvent(State.RUNNING, name))
 
         can_click = focused and not self._paused
-        if not (can_click or self.preview):
+        # Only read the foreground window, so text in other windows (including our own UI) is never clicked.
+        if not (can_click or (self.preview and not own_window)) or not fg or not fg.region:
             return
 
-        result = detector.scan(fg.monitor if fg else None)
+        result = detector.scan(fg.region)
         targets = [t.text for t in cfg.targets if t.enabled]
         matches = find_matches(result.lines, targets)
         self.stats.scans += 1

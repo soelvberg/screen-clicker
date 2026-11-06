@@ -27,6 +27,18 @@ class _MONITORINFO(ctypes.Structure):
 
 
 _user32.GetMonitorInfoW.argtypes = [wintypes.HMONITOR, ctypes.POINTER(_MONITORINFO)]
+_user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+_user32.GetWindow.argtypes = [wintypes.HWND, wintypes.UINT]
+_user32.GetWindow.restype = wintypes.HWND
+_user32.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]
+_user32.GetAncestor.restype = wintypes.HWND
+_kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+_kernel32.GetConsoleWindow.restype = wintypes.HWND
+_dwmapi = ctypes.WinDLL("dwmapi")
+_DWMWA_EXTENDED_FRAME_BOUNDS = 9
+_GW_OWNER = 4
+_GA_ROOTOWNER = 3
+_MIN_REGION = 32
 
 # Shell processes are ancestors of everything launched from Explorer; don't treat them as "our" window.
 _SHELL_NAMES = {"explorer.exe", "services.exe", "svchost.exe", "wininit.exe"}
@@ -36,16 +48,38 @@ _SHELL_NAMES = {"explorer.exe", "services.exe", "svchost.exe", "wininit.exe"}
 class ForegroundProcess:
     pid: int
     name: str
-    monitor: dict[str, int] | None = None
+    hwnd: int = 0
+    region: dict[str, int] | None = None
 
 
-def _monitor_of(hwnd: int) -> dict[str, int] | None:
+def _monitor_rect(hwnd: int) -> wintypes.RECT | None:
     info = _MONITORINFO(cbSize=ctypes.sizeof(_MONITORINFO))
     hmon = _user32.MonitorFromWindow(hwnd, _MONITOR_DEFAULTTOPRIMARY)
     if not hmon or not _user32.GetMonitorInfoW(hmon, ctypes.byref(info)):
         return None
-    r = info.rcMonitor
-    return {"left": r.left, "top": r.top, "width": r.right - r.left, "height": r.bottom - r.top}
+    return info.rcMonitor
+
+
+def _window_rect(hwnd: int) -> wintypes.RECT | None:
+    rect = wintypes.RECT()
+    # Extended frame bounds exclude the invisible resize borders that GetWindowRect includes.
+    if _dwmapi.DwmGetWindowAttribute(
+        wintypes.HWND(hwnd), _DWMWA_EXTENDED_FRAME_BOUNDS, ctypes.byref(rect), ctypes.sizeof(rect)
+    ) == 0 or _user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+        return rect
+    return None
+
+
+def window_region(hwnd: int) -> dict[str, int] | None:
+    """Visible part of the window on its monitor, or None if minimized / off-screen."""
+    win, mon = _window_rect(hwnd), _monitor_rect(hwnd)
+    if not win or not mon:
+        return None
+    left, top = max(win.left, mon.left), max(win.top, mon.top)
+    right, bottom = min(win.right, mon.right), min(win.bottom, mon.bottom)
+    if right - left < _MIN_REGION or bottom - top < _MIN_REGION:
+        return None
+    return {"left": left, "top": top, "width": right - left, "height": bottom - top}
 
 
 def foreground_process() -> ForegroundProcess | None:
@@ -55,9 +89,19 @@ def foreground_process() -> ForegroundProcess | None:
     pid = wintypes.DWORD()
     _user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
     try:
-        return ForegroundProcess(pid.value, psutil.Process(pid.value).name(), _monitor_of(hwnd))
+        name = psutil.Process(pid.value).name()
     except psutil.Error:
         return None
+    return ForegroundProcess(pid.value, name, hwnd, window_region(hwnd))
+
+
+def own_window_handles() -> frozenset[int]:
+    """Our console window and the terminal window that hosts it (e.g. Windows Terminal)."""
+    console = _kernel32.GetConsoleWindow()
+    if not console:
+        return frozenset()
+    handles = {console, _user32.GetWindow(console, _GW_OWNER), _user32.GetAncestor(console, _GA_ROOTOWNER)}
+    return frozenset(h for h in handles if h)
 
 
 def own_process_ids() -> frozenset[int]:

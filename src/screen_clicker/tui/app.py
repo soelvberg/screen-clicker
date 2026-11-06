@@ -213,8 +213,8 @@ class ScreenClickerApp(App):
                 )
             with TabPane("⌕ OCR Preview", id="preview"):
                 yield Static(
-                    "Live text the OCR sees on screen while this tab is open (no clicking from preview). "
-                    "Switch to the target window and back to inspect it.",
+                    "Text the OCR reads from the foreground window while this tab is open (no clicking from preview). "
+                    "Switch to the target window for a moment and come back; the last result stays here.",
                     classes="hint",
                 )
                 yield DataTable(id="preview-table", cursor_type="row", zebra_stripes=True)
