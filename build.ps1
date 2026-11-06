@@ -17,6 +17,8 @@ New-Item -ItemType Directory -Force build | Out-Null
     --icon build/icon.ico `
     --paths src `
     --collect-submodules winrt `
+    --collect-submodules textual `
+    --collect-submodules rich `
     --collect-data textual `
     --add-data "src/screen_clicker/tui/theme.tcss;screen_clicker/tui" `
     --hidden-import pynput.keyboard._win32 `
